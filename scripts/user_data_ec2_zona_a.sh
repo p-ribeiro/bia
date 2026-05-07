@@ -41,7 +41,6 @@ sudo yum install -y nodejs
 
 #Configurar python 3.11 e uv para uso com mcp servers da aws
 sudo dnf install python3.11 -y
-sudo ln -sf /usr/bin/python3.11 /usr/bin/python3
 
 sudo -u ec2-user bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> /home/ec2-user/.bashrc
