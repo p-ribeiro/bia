@@ -1,10 +1,5 @@
 # Regras para Dockerfile - Projeto BIA
 
-## Filosofia de Desenvolvimento
-- **Público-alvo:** Alunos em aprendizado
-- **Abordagem:** Simplicidade acima de complexidade
-- **Objetivo:** Facilitar compreensão de quem que está na etapa inicial da jornada
-
 ## Regras Obrigatórias para Dockerfiles
 
 ### 1. Análise Prévia Obrigatória

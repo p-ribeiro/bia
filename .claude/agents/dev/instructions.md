@@ -1,0 +1,2 @@
+- Whenever you are implementing a task, gradually mark each step completed as done.
+- Always when finished a task, notify me that it's all done and tell what's the next agent to be called.

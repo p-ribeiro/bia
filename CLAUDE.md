@@ -1,22 +1,80 @@
-# Agente BIA — DevOps e Cloud AWS
+# Projeto BIA - Contexto e Análise
 
-Você é um DevOps Engineer especialista em AWS Cloud, parte do time de desenvolvimento do projeto BIA da Formação AWS.
+## Visão Geral do Projeto
+**Nome:** BIA  
+**Versão:** 4.3.0  
+**Repositório:** https://github.com/henrylle/bia
 
-Seu papel é garantir que a infraestrutura do projeto seja robusta, escalável e segura. Você trabalha em estreita colaboração com desenvolvedores, engenheiros de segurança e outros stakeholders para implementar as melhores práticas de DevOps. Você é responsável por configurar, gerenciar e fazer troubleshooting na infraestrutura do projeto.
+## Impressões Iniciais do Desenvolvedor
+O projeto da BIA é um projeto educacional criado pelo Henrylle Maia (@henryllemaia) para ser usado nos eventos que ele realiza e servir de base para o treinamento Formação AWS.
 
-## Ambiente de execução
+É um projeto concebido no ano de 2021 e que vem evoluindo usando as melhores práticas dentro da AWS.
 
-Você roda dentro da EC2 de desenvolvimento `bia-dev` (Amazon Linux 2023, us-east-1) e acessa os serviços AWS pela **role da instância** — não use credenciais estáticas nem `aws configure`. A configuração da `bia-dev` está descrita na rule de infraestrutura.
+O foco base dele é fornecer uma estrutura educacional em que o aluno possa evoluir gradualmente, desde problemas simples até situações mais complexas.
 
-## Regras do projeto
 
-As regras abaixo são obrigatórias. Consulte-as antes de mexer em infraestrutura, pipeline ou Dockerfile.
+---
 
-@.kiro/rules/infraestrutura.md
-@.kiro/rules/pipeline.md
-@.kiro/rules/dockerfile.md
+## Análise Técnica 
 
-## Contexto do projeto
+### Arquitetura Identificada
+- **Frontend:** React 17.0.2 com Vite para build
+- **Backend:** Node.js com Express 4.17.1
+- **Banco de Dados:** PostgreSQL 16.1
+- **ORM:** Sequelize 6.6.5
+- **Containerização:** Docker com Docker Compose
 
-@README.md
-@AmazonQ.md
+### Stack Tecnológica
+**Frontend:**
+- React com React Router DOM
+- React Icons para ícones
+- Vite como bundler (configurado no Dockerfile)
+
+**Backend:**
+- Express.js como framework web
+- Sequelize como ORM
+- Morgan para logging
+- CORS habilitado
+- Express Session para gerenciamento de sessões
+- EJS e HBS como template engines
+
+**Infraestrutura:**
+- Docker containerizado
+- AWS SDK integrado (Secrets Manager, STS)
+- PostgreSQL como banco principal
+- Suporte a variáveis de ambiente
+
+### Estrutura do Projeto
+```
+/bia
+├── api/                 # APIs do backend
+├── client/             # Aplicação React
+├── config/             # Configurações
+├── database/           # Migrations e seeds
+├── scripts/            # Scripts auxiliares
+├── tests/              # Testes unitários (Jest)
+├── docs/               # Documentação
+├── compose.yml         # Docker Compose
+├── Dockerfile          # Container da aplicação
+├── buildspec.yml       # AWS CodeBuild
+└── package.json        # Dependências Node.js
+```
+
+### Recursos AWS Identificados
+- **ECR:** Registry para imagens Docker (configurado no buildspec.yml)
+- **CodeBuild:** Pipeline de CI/CD já configurado
+- **Secrets Manager:** Gerenciamento de credenciais
+- **STS:** Tokens temporários de acesso
+
+### Pontos de Atenção
+1. **Segurança:** Credenciais hardcoded no compose.yml (apenas para desenvolvimento)
+2. **Escalabilidade:** Aplicação monolítica, mas bem estruturada
+3. **Monitoramento:** Healthcheck comentado no Docker Compose
+4. **Testes:** Estrutura de testes presente com Jest
+
+### Rotas da API para Testes
+- **`/api/versao`:** Retorna versão da aplicação (não usa banco)
+- **`/api/tarefas`:** Retorna dados do banco PostgreSQL (ideal para testar conectividade com RDS)
+
+## Regras para os agentes
+- Todos os agentes devem seguir as regras em `/.claude/rules/`
