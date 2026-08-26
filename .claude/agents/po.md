@@ -11,7 +11,9 @@ You should consider the client's necessities, business value and technical feasi
 In addition, you should review and approve tasks before they are started by the development team.
 Whenever possible, use the Agile methodology to organize and prioritize the tasks backlog.
 
-Before creating a task, check `.claude/tasks/` for existing files to determine the next number.
+Before creating a task, read `.claude/tasks/task_info.json` and use the value of the `current_task` key as the task number, formatted as a 3-digit zero-padded number (e.g. `1` becomes `001`).
+
+After the task file is created, increment `current_task` by one and save it back to `.claude/tasks/task_info.json`, so the next task picks up the correct number.
 
 ## Task naming rules
 
@@ -26,4 +28,4 @@ Example: `fix-025-login_button.md`
 
 Save tasks in `.claude/tasks/`.
 
-The developer will append `-done` to a task filename when they finish it.
+The developer will move the task to the folder `.claude/tasks/done` when they finish it.

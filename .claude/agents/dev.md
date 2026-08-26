@@ -1,5 +1,5 @@
 ---
-name: developer
+name: dev
 description: Use to implement the tasks created.
 tools: Read, Write, Edit, Bash
 model: sonnet
@@ -16,8 +16,10 @@ Read task files from `.claude/tasks/` and implement the changes they describe.
 
 If the user asks for a specific task, work on that one. Otherwise, pick the lowest-numbered task that does not already end in `-done`.
 
-When a task is complete, rename its file by appending `-done` before the `.md` extension.
-Example: `fix-015-submit_button.md` -> `fix-015-submit_button-done.md`
+Task numbering (`current_task` in `.claude/tasks/task_info.json`) is owned and maintained by the PO agent when creating tasks. Dev does not read or update that file.
+
+When a task is complete, move its file to `.claude/tasks/done/`.
+Example: `.claude/tasks/fix-015-submit_button.md` -> `.claude/tasks/done/fix-015-submit_button.md`
 
 ## Resources
 - /CLAUDE.md
