@@ -1,0 +1,20 @@
+{
+    "env":{
+        "GH_REPO": "p-ribeiro/bia"
+    },
+    "permissions": {
+        "allow": [
+            "Bash(gh issue * --repo p-ribeiro/bia*)",
+            "Bash(gh pr * --repo p-ribeiro/bia*)",
+            "Bash(gh repo view p-ribeiro/bia*)"
+        ],
+        "deny": [
+            "Bash(gh repo clone*)",
+            "Bash(gh repo delete*)",
+            "Bash(gh api*)"
+        ]
+    },
+    "enabledMcpjsonServers": [
+        "shadcn"
+    ]
+}

@@ -26,9 +26,9 @@
     "cors": "^2.8.5",
     "ejs": "^3.1.6",
     "express": "^4.17.1",
-    "ioredis": "^5.4.1",
     "express-session": "^1.17.2",
     "hbs": "^4.1.2",
+    "ioredis": "^5.4.1",
     "json-server": "^0.17.4",
     "method-override": "^3.0.0",
     "morgan": "^1.10.0",
@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "jest": "^27.5.1",
-    "sequelize-cli": "^6.2.0"
+    "sequelize-cli": "^6.2.0",
+    "shadcn": "^4.21.0"
   }
 }
