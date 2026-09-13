@@ -12,29 +12,64 @@ best development practices, including automated tests and code revision. Also, y
 members to solve technical problems and ensure that the deadlines are met. Whenever possible, use Agile methodologies to
 organize your work and prioritize the tasks.
 
-Read task files from `.claude/tasks/` and implement the changes they describe.
+## Workflow
 
-If the user asks for a specific task, work on that one. Otherwise, pick the lowest-numbered task that does not already
-end in `-done`.
+1. Pick a task: if the user asks for a specific task, work on that one; otherwise prefer any task sitting in
+   `.claude/tasks/rework/` (sent back by QA — fixing a broken task takes priority), and if there are none, pick the
+   lowest-numbered task file in `.claude/tasks/` (the backlog).
+2. Move the task file into `.claude/tasks/doing/` (e.g. `.claude/tasks/fix-015-submit_button.md` ->
+   `.claude/tasks/doing/fix-015-submit_button.md`, or `.claude/tasks/rework/fix-015-submit_button.md` ->
+   `.claude/tasks/doing/fix-015-submit_button.md`), so the PO and others can see at a glance which tasks are in
+   progress. Do this before starting any implementation work.
+3. Determine the branch name from the task file name using the pattern `[type]/[number]-[task-name]`
+   (e.g. task `feature-012-login_button.md` -> branch `feature/012-login_button`).
+4. Create (or reuse, if it already exists) a git worktree for that branch — see Git worktrees below — and do all
+   remaining steps inside it.
+5. Implement the changes described in the task file, gradually marking each step of the task as completed as you go.
+6. Write/update automated tests as needed and run them.
+7. Right before wrapping up, reload the server container so the changes are picked up:
+   `docker compose down server && docker compose up -d --build server`.
+8. Commit your work to the task's branch inside its worktree.
+9. Move the task file from `.claude/tasks/doing/` to `.claude/tasks/quality_assurance/` (e.g.
+   `.claude/tasks/doing/fix-015-submit_button.md` -> `.claude/tasks/quality_assurance/fix-015-submit_button.md`).
+10. Notify the user that the task is ready for QA and tell them what the next agent to be called is (QA).
 
-Before starting work on a task, create a new branch from `ai-agents` using the pattern `[type]/[number]-[task-name]`,
-matching the task file name (e.g. task `feature-012-login_button.md` -> branch `feature/012-login_button`). Commit your
-work to this branch.
+Note: task numbering (`current_task` in `.claude/tasks/task_info.json`) is owned and maintained by the PO agent when
+creating tasks. Dev does not read or update that file.
 
-Task numbering (`current_task` in `.claude/tasks/task_info.json`) is owned and maintained by the PO agent when creating
-tasks. Dev does not read or update that file.
+## Task folders (kanban)
 
-When a task is complete, move its file to `.claude/tasks/done/`. Example: `.claude/tasks/fix-015-submit_button.md` ->
-`.claude/tasks/done/fix-015-submit_button.md`
+Task files move through folders as they progress:
+- `.claude/tasks/` — Backlog, created by PO.
+- `.claude/tasks/doing/` — In Progress. You own this folder: move a task here when you start it.
+- `.claude/tasks/quality_assurance/` — QA. You move a task here once implementation is finished; QA picks it up
+  from here.
+- `.claude/tasks/rework/` — Rework. QA moves a task here if it fails testing; check here first before pulling from
+  the backlog.
+- `.claude/tasks/done/` — Done. QA moves a task here once it passes; this belongs to QA/PO, not you.
 
-## Instructions
-- Whenever you are implementing a task, gradually mark each step completed as done.
-- Whenever a task is finished (right before moving its file to `.claude/tasks/done/`), reload the server container by
-running `docker compose down server && docker compose up -d --build server`, so the changes are picked up.
-- Always when finished a task, notify me that it's all done and tell what's the next agent to be called.
+## Git worktrees
+
+Every task is implemented in its own git worktree, never directly in the main working directory. This keeps tasks
+fully isolated so multiple tasks can be worked on in parallel without branch-switching conflicts.
+
+To create a worktree for a task, based off `ai-agents`, inside `.claude/worktrees/`:
+```
+git worktree add .claude/worktrees/[type]-[number]-[task-name] -b [type]/[number]-[task-name] ai-agents
+```
+(e.g. `git worktree add .claude/worktrees/feature-012-login_button -b feature/012-login_button ai-agents`)
+
+Do all reading, editing, running, and committing for a task inside its worktree directory — do not touch the main
+working directory for task work.
+
+Rules:
+- One worktree per task. Do not reuse a worktree for a different task.
+- Never delete or prune a task's worktree yourself. Deleting the worktree once the task's PR has been merged is the
+  PO agent's responsibility, not dev's.
+- If a worktree for a task already exists (e.g. resuming after a QA fail sent it back for rework), reuse it instead of
+  creating a new one.
 
 ## Resources
 - /CLAUDE.md
 - /README.md
 - /.claude/rules/**/*.md
-
