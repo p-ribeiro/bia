@@ -1039,3 +1039,123 @@ footer {
 .badge-error {
   color: #dc3545;
 }
+
+/* Date Picker */
+.date-picker-wrapper {
+  width: 100%;
+}
+
+.date-picker-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.date-picker-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.react-datepicker {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.react-datepicker__header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker-time__header {
+  color: var(--text-primary);
+}
+
+.react-datepicker__day {
+  color: var(--text-primary);
+}
+
+.react-datepicker__day:hover {
+  background: var(--bg-secondary);
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: var(--accent-primary);
+  color: #ffffff;
+}
+
+.react-datepicker__day--outside-month {
+  color: var(--text-secondary);
+}
+
+.react-datepicker__triangle {
+  fill: var(--bg-secondary);
+  color: var(--bg-secondary);
+  stroke: var(--border-color);
+}
+
+/* Task inline editing */
+.task-editing {
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.task-editing .task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-edit-title {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.task-edit-title:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.task-edit-date {
+  max-width: 160px;
+}
+
+.task-edit,
+.task-save,
+.task-cancel {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.task-edit:hover {
+  color: var(--accent-primary);
+}
+
+.task-save:hover {
+  color: var(--accent-success);
+}
+
+.task-cancel:hover {
+  color: var(--accent-danger);
+}

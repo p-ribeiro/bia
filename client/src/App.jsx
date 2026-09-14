@@ -130,6 +130,43 @@ function AppContent() {
     }
   };
 
+  //Atualizar Tarefa (título/data)
+  const updateTask = async (uuid, updates) => {
+    const currentTask = tasks.find((task) => task.uuid === uuid);
+    if (!currentTask) return;
+
+    const updatedTask = { ...currentTask, ...updates };
+    const url = `${apiUrl}/api/tarefas/update_priority/${uuid}`;
+    logApiRequest('PUT', url, updatedTask);
+
+    try {
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(updatedTask),
+      });
+
+      const data = await res.json();
+
+      logApiResponse('PUT', url, res.status, data);
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      setTasks(
+        tasks.map((task) => (task.uuid === uuid ? { ...task, ...data } : task))
+      );
+
+      addLog('SUCCESS', 'Tarefa atualizada', `Tarefa ${uuid} atualizada com sucesso`);
+    } catch (error) {
+      logApiError('PUT', url, error);
+      addLog('ERROR', 'Falha ao atualizar tarefa', error.message);
+    }
+  };
+
   //Adicionar Tarefa
   const addTask = async (task) => {
     const url = `${apiUrl}/api/tarefas`;
@@ -217,6 +254,7 @@ function AppContent() {
           onDelete={deleteTask}
           onDeleteAll={confirmDeleteAll}
           onToggle={toggleReminder}
+          onUpdate={updateTask}
           fromCache={fromCache}
           cacheTTL={cacheTTL}
           cacheError={cacheError}
