@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import { LogProvider, useLog } from "./contexts/LogContext.jsx";
 import Header from "./components/Header.jsx";
@@ -9,6 +9,8 @@ import AddTask from "./components/AddTask.jsx";
 import Modal from "./components/Modal.jsx";
 import About from "./components/About.jsx";
 import DebugLogs from "./components/DebugLogs.jsx";
+import TasksByPriority from "./components/TasksByPriority.jsx";
+import { FaChartBar } from "react-icons/fa";
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -225,6 +227,11 @@ function AppContent() {
           <p>Adicione sua primeira tarefa usando o formulário acima!</p>
         </div>
       )}
+      <div style={{ textAlign: "center" }}>
+        <Link to="/tasks/by-priority" className="priority-chart-link">
+          <FaChartBar /> Ver gráfico por prioridade
+        </Link>
+      </div>
       <Modal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
@@ -245,6 +252,10 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<About />} />
+            <Route
+              path="/tasks/by-priority"
+              element={<TasksByPriority tasks={tasks} />}
+            />
           </Routes>
           <Footer />
         </div>
