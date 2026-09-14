@@ -63,19 +63,22 @@ const TasksByPriority = ({ tasks = [] }) => {
         </CardHeader>
         <CardContent>
           {hasTasks ? (
-            <ChartContainer config={chartConfig} className="min-h-[220px] w-full">
+            <ChartContainer config={chartConfig} className="aspect-auto h-[140px] w-full">
               <BarChart
                 accessibilityLayer
                 data={chartData}
                 layout="vertical"
-                margin={{ left: 12 }}
+                barSize={18}
+                barCategoryGap="35%"
+                margin={{ left: 4, right: 16, top: 4, bottom: 4 }}
               >
                 <CartesianGrid horizontal={false} />
                 <YAxis
                   dataKey="priority"
                   type="category"
+                  width={88}
                   tickLine={false}
-                  tickMargin={10}
+                  tickMargin={8}
                   axisLine={false}
                   tickFormatter={(value) => chartConfig[value]?.label ?? value}
                 />
@@ -84,7 +87,7 @@ const TasksByPriority = ({ tasks = [] }) => {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel nameKey="priority" />}
                 />
-                <Bar dataKey="count" radius={5} />
+                <Bar dataKey="count" radius={4} />
               </BarChart>
             </ChartContainer>
           ) : (

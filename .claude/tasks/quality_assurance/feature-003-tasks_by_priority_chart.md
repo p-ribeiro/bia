@@ -49,32 +49,6 @@ manually count or filter tasks.
 - [x] Empty state (zero tasks) is handled without errors or a broken UI.
 - [x] Existing Tasks page functionality is unaffected by this change.
 
-## Dev Notes (implementation summary)
-
-- The project's `Tarefas` model only has a boolean `importante` field (no multi-level `priority` field exists
-  in the DB). This field is the de-facto "priority" indicator in the app (star icon = "Importante" priority
-  vs. "Normal"). The new chart groups tasks into these two levels, derived 100% client-side from the tasks
-  already fetched via the existing `/api/tarefas` endpoint. No backend/API changes were made.
-- `shadcn` was not previously configured in `client/`. Set it up for this Vite + React (JS) project:
-  - Added Tailwind CSS v4 (`tailwindcss` + `@tailwindcss/vite`, as devDependencies) and the `@` path alias
-    (`vite.config.js`, `jsconfig.json`).
-  - Only imported Tailwind's `theme` and `utilities` layers in `src/index.css` (not `preflight`/base reset),
-    specifically to avoid disrupting the app's existing hand-rolled CSS.
-  - Added shadcn's CSS variables (`--background`, `--primary`, `--chart-1..5`, etc.) for both light and dark
-    themes in `src/index.css`, alongside (not replacing) the app's existing `--bg-*`/`--accent-*` variables.
-  - Created `components.json` and ran `npx shadcn@latest add chart button card`, which generated
-    `client/src/components/ui/{chart,button,card}.jsx`.
-  - Removed a stray, untracked `client/yarn.lock` that wasn't in use (project uses npm per `package.json`
-    scripts and `Dockerfile`) — it was making the shadcn CLI try to invoke `yarn`, which isn't installed.
-- New page: `client/src/components/TasksByPriority.jsx`, routed at `/tasks/by-priority` in `client/src/App.jsx`.
-  Uses shadcn's `Card` + `ChartContainer`/Recharts `BarChart` (horizontal bars, one per priority level).
-  Shows an empty-state message when there are no tasks, and a "← Voltar para Tarefas" link back to `/`.
-- Added a "Ver gráfico por prioridade" link on the main Tasks page (`HomePage` in `App.jsx`) pointing to the
-  new route.
-- Verified: `npm run build` succeeds, Docker image builds and serves the new route (HTTP 200), backend Jest
-  suite (`npm test`, 16 tests) still passes untouched, and `/api/tarefas` counts were spot-checked against
-  seeded tasks (1 "importante" + 2 "normal" matched the chart data).
-
 ## Notes for the Dev Agent
 
 - This is primarily a **frontend** feature. Prefer aggregating priority counts client-side from existing task
@@ -89,3 +63,90 @@ manually count or filter tasks.
 ## Priority
 
 Medium — adds a useful reporting/visualization feature without touching core task management functionality.
+
+## QA
+
+**Verdict: Fail**
+
+### What was tested
+- Branch: `feature/003-tasks_by_priority_chart`, worktree `.claude/worktrees/feature-003-tasks_by_priority_chart`.
+- Note: this task file was found in `.claude/tasks/doing/` (not yet moved to `quality_assurance/`) at the time of
+  testing, but the branch already had a complete implementation commit
+  (`363cf15 feat(client): add tasks-by-priority chart page`), so QA proceeded anyway per explicit request.
+- Ran `npm test` inside the worktree → 16/16 backend Jest tests passed (unrelated to this frontend-only change).
+- Confirmed via `git diff` that no backend files (`api/`, `database/`, models) were touched — only `client/*` and
+  `.claude/tasks/doing/feature-003-...md` changed. Backend contract requirement satisfied.
+- Started the stack with `./scripts/docker-up.sh` (server on host port 3003). Since the app's `Dockerfile` bakes
+  `VITE_API_URL=http://localhost:3001` at build time regardless of the worktree's actual host port (pre-existing
+  infra issue, out of scope for this task), set up a temporary local Node TCP proxy from `localhost:3001` →
+  `localhost:3003` purely for QA purposes (not part of the codebase) so the built frontend could reach its own
+  backend in the browser.
+- Ran DB migrations (`docker compose exec server npx sequelize db:migrate`) — already up to date.
+- With Playwright, verified in browser at `http://localhost:3001/`:
+  - Empty DB state: Home page shows "Nenhuma tarefa por aqui" and a "Ver gráfico por prioridade" link with
+    `FaChartBar` icon. Clicking it navigates to `/tasks/by-priority`, which correctly shows its own empty state
+    ("Nenhuma tarefa por aqui... Adicione tarefas na tela principal...") instead of a broken/empty chart.
+    "← Voltar para Tarefas" link navigates back to `/`.
+  - Seeded 3 "importante" tasks and 2 "normal" tasks via `POST /api/tarefas`. Reloaded home page — all 5 tasks
+    listed correctly, existing "Marcar/Remover importante" and "Excluir" buttons still present and unchanged.
+  - Navigated to `/tasks/by-priority`: a horizontal bar chart (shadcn `ChartContainer` + Recharts `BarChart`)
+    renders with two bars, "Importante" and "Normal". Hovering each bar shows a tooltip with the exact count
+    (`Importante 3`, `Normal 2`), matching the seeded data.
+  - No console errors/warnings; all network requests (`/api/tarefas`, `/api/versao`, `/api/cache-config`)
+    returned 200.
+  - Cleaned up seeded data via `DELETE /api/tarefas` afterward.
+- Tore down the stack with `./scripts/docker-down.sh` and removed the temporary QA-only proxy process.
+
+### Bug found (repro steps)
+1. Start the app with at least one "importante" and one non-important task so both bars render.
+2. Navigate to `/tasks/by-priority`.
+3. Look at the Y-axis category label for the top bar.
+
+**Expected:** the label reads "Importante" in full, clearly readable, consistent with the "Normal" label below it.
+
+**Actual:** the "Importante" label is clipped on its left edge, rendering as "nportante" (missing the "Im"). This
+reproduces consistently across viewport widths (tested at both the app's default ~945px window and a resized
+1280x900 window) and in both light/dark — it's not a one-off rendering flake. Root cause appears to be the
+Recharts `YAxis` category tick label overflowing slightly past the left edge of the app's global `.container`
+element, which has `overflow: hidden` (`client/src/index.css`); the chart's `margin={{ left: 12 }}` in
+`TasksByPriority.jsx` isn't enough to keep the auto-sized "Importante" label (the longer of the two labels) fully
+inside the visible/clipped area, while the shorter "Normal" label happens to fit.
+
+This directly affects the acceptance criterion "The page renders a chart ... with one data point/bar per priority
+level, showing the correct count of tasks for each" — the counts are correct (verified via tooltip), but one of
+the two category labels is not readable as rendered.
+
+### Suggested fix direction (for dev)
+Increase the chart's left margin / YAxis width (or reduce the Card/CardContent left padding, or set a fixed
+`width` on `YAxis`) so the longest label ("Importante") renders fully inside the chart/container bounds at the
+app's default ~480px-wide layout.
+
+Additionally, while fixing the label clipping, please also make the bars themselves smaller/thinner (both the
+bar thickness and overall chart height feel oversized relative to the rest of the app's compact ~480px-wide card
+layout) — reduce `barSize`/bar category gap and/or the `ChartContainer` min-height so the chart looks proportional
+to the rest of the page instead of dominating it.
+
+## Rework (dev)
+
+Both issues fixed in `client/src/components/TasksByPriority.jsx`:
+
+- **Label clipping:** gave the `YAxis` an explicit `width={88}` (previously relying on Recharts' default
+  width of 60px, which wasn't enough to fit "Importante" plus `tickMargin`, so the tick `<text>` was
+  rendered partly outside the chart's own `<svg>` bounds and got clipped by it — not actually a `.container`
+  overflow issue, the text never fit inside the SVG's own coordinate space to begin with). Also reduced
+  `tickMargin` to 8 and tightened the chart's outer `margin` (`left: 4, right: 16, top: 4, bottom: 4`) so the
+  reserved axis width is used efficiently.
+- **Oversized bars/chart:** removed the `min-h-[220px]` + default `aspect-video` combo (which forced a tall,
+  16:9-ish chart) in favor of an explicit `aspect-auto h-[140px]` on `ChartContainer`, and added
+  `barSize={18}` + `barCategoryGap="35%"` on `BarChart` so bars are noticeably thinner, proportional to the
+  app's compact ~480px-wide card.
+
+Verified with a headless Chrome (Playwright) pass against the rebuilt Docker image, at both the app's default
+~500px width and a resized 1280x900 window, in light and dark themes:
+- Both "Importante" and "Normal" Y-axis labels render fully, no clipping.
+- Chart height/bar thickness now look proportional to the rest of the compact card layout instead of
+  dominating it.
+- Tooltip on hover still shows the correct per-category count (spot-checked: 1 "Importante" task → tooltip
+  shows "Importante 1").
+- Empty state (zero tasks) still renders its message correctly, no console errors.
+- `npm test` (backend Jest suite) still 16/16 passing, untouched.
