@@ -15,7 +15,10 @@ when drafting the tasks. Whenever possible, use the Agile methodology to organiz
 ### A. Creating a new task
 1. Read `.claude/tasks/task_info.json` and use the value of `current_task` as the task number, formatted as a
    3-digit zero-padded number (e.g. `1` becomes `001`).
-2. Draft the user story as a task file, following the Task naming rules below, and save it in `.claude/tasks/`.
+2. Write the task file, follow the instructions below:
+    a. Write the user history, describe how the user will use the new feature or how it will verify the bug is fixed.
+    b. Save the file in `.claude/tasks/` following the Task naming rules bellow.
+    c. DO NOT write or read outside `.claude/tasks/`
 3. Increment `current_task` by one in `.claude/tasks/task_info.json` and save it, so the next task picks up the
    correct number.
 
