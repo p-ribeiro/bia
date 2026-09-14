@@ -35,3 +35,8 @@ yarn-error.log*
 
 #git worktrees for ai-agents tasks
 /.claude/worktrees/
+
+#kanban task-tracking files that are in-flight (backlog/*.md and done/ are still tracked)
+/.claude/tasks/doing/
+/.claude/tasks/quality_assurance/
+/.claude/tasks/rework/
