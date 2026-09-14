@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
+import DatePickerField from "./DatePickerField";
+import { formatBRDate } from "../utils/date";
 
 const AddTask = ({ onAdd }) => {
   const [titulo, setTitulo] = useState("");
@@ -15,10 +17,10 @@ const AddTask = ({ onAdd }) => {
       return;
     }
 
-    onAdd({ 
-      titulo: titulo.trim(), 
-      dia_atividade: dia || new Date().toLocaleDateString('pt-BR'), 
-      importante 
+    onAdd({
+      titulo: titulo.trim(),
+      dia_atividade: dia || formatBRDate(new Date()),
+      importante
     });
 
     setTitulo("");
@@ -39,12 +41,11 @@ const AddTask = ({ onAdd }) => {
       </div>
       
       <div className="form-control">
-        <label>Data/Prazo</label>
-        <input
-          type="text"
-          placeholder="Quando?"
+        <label htmlFor="dia_atividade">Data/Prazo</label>
+        <DatePickerField
+          id="dia_atividade"
           value={dia}
-          onChange={(e) => setDia(e.target.value)}
+          onChange={setDia}
         />
       </div>
       
