@@ -36,7 +36,8 @@ yarn-error.log*
 #git worktrees for ai-agents tasks
 /.claude/worktrees/
 
-#kanban task-tracking working state (backlog *.md files and task_info.json stay tracked)
+#kanban task-tracking working state — no task .md file is ever tracked, only task_info.json (the counter)
+/.claude/tasks/*.md
 /.claude/tasks/doing/
 /.claude/tasks/quality_assurance/
 /.claude/tasks/rework/
