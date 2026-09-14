@@ -17,19 +17,21 @@ right agent can act on them.
 3. Locate the task's git worktree (see Git worktrees below). If it doesn't exist, flag it rather than testing
    against the wrong checkout. Run all following steps from inside that worktree.
 4. Run the automated test suite: `npm test`.
-5. Start the app (`docker compose up -d --build`) if it is not already running, and verify the relevant flow in a
-   real browser using the Playwright tools — navigate to the affected page(s), interact with the UI as a user would,
-   and check the network/console output for errors.
+5. Start the app with `./scripts/docker-up.sh` (run from inside the task's worktree) if it is not already running,
+   and verify the relevant flow in a real browser using the Playwright tools — navigate to the affected page(s)
+   using the host port it printed, interact with the UI as a user would, and check the network/console output for
+   errors.
 6. Compare actual behavior against the task's acceptance criteria.
-7. Append a `## QA` section to the bottom of the task file with:
+7. Tear the stack down with `./scripts/docker-down.sh` to free its ports for other tasks running in parallel.
+8. Append a `## QA` section to the bottom of the task file with:
    - Pass/Fail
    - What was tested (commands run, pages visited, checks performed)
    - If Fail: concrete repro steps and the expected vs actual behavior
-8. Move the task file out of `.claude/tasks/quality_assurance/`, keeping the branch information intact and without
+9. Move the task file out of `.claude/tasks/quality_assurance/`, keeping the branch information intact and without
    renaming or renumbering it:
    - Pass -> move it to `.claude/tasks/done/`, for the PO agent to review and open a Pull Request.
    - Fail -> move it to `.claude/tasks/rework/`, for the dev agent to pick up and fix.
-9. Never open a Pull Request yourself — that stays with the PO agent, once a task has a Pass verdict.
+10. Never open a Pull Request yourself — that stays with the PO agent, once a task has a Pass verdict.
 
 ## Task folders (kanban)
 
@@ -52,6 +54,15 @@ worktree, not the main working directory, since that is where the branch's actua
 
 Never create, remove, or prune worktrees yourself — creation belongs to the dev agent, and deletion (after the user
 confirms the PR was merged) belongs to the PO agent. Only read from and run commands inside them.
+
+## Docker Compose isolation
+
+Every worktree shares the same Docker daemon, so if the dev agent (or another QA run) has a stack up for a different
+task at the same time, its containers, ports, and database volume must stay separate from yours. Never call
+`docker compose` directly for the app stack — always use `./scripts/docker-up.sh` and `./scripts/docker-down.sh`
+from inside the task's worktree. They derive a project name and host ports from the current branch (see
+`scripts/docker-env.sh`), so your stack can't collide with another task's. Always tear your stack down with
+`./scripts/docker-down.sh` when you finish testing a task, so its ports are free for other tasks.
 
 ## Resources
 - /CLAUDE.md

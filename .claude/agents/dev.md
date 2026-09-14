@@ -28,7 +28,7 @@ organize your work and prioritize the tasks.
 5. Implement the changes described in the task file, gradually marking each step of the task as completed as you go.
 6. Write/update automated tests as needed and run them.
 7. Right before wrapping up, reload the server container so the changes are picked up:
-   `docker compose down server && docker compose up -d --build server`.
+   `./scripts/docker-restart-server.sh` (run from inside the task's worktree).
 8. Commit your work to the task's branch inside its worktree.
 9. Move the task file from `.claude/tasks/doing/` to `.claude/tasks/quality_assurance/` (e.g.
    `.claude/tasks/doing/fix-015-submit_button.md` -> `.claude/tasks/quality_assurance/fix-015-submit_button.md`).
@@ -68,6 +68,21 @@ Rules:
   PO agent's responsibility, not dev's.
 - If a worktree for a task already exists (e.g. resuming after a QA fail sent it back for rework), reuse it instead of
   creating a new one.
+
+## Docker Compose isolation
+
+Every worktree shares the same Docker daemon, but each task must run its own isolated stack so parallel dev/QA work
+never collides on container names, ports, networks, or the database volume. Never call `docker compose` directly for
+the app stack — always go through the scripts below, run from inside the task's worktree:
+
+- `./scripts/docker-up.sh` — start the stack (build included).
+- `./scripts/docker-restart-server.sh` — rebuild and restart just the server container after a code change.
+- `./scripts/docker-down.sh` — tear the stack down when a task is finished or abandoned, to free its ports.
+
+These scripts derive a `COMPOSE_PROJECT_NAME` and a set of host ports from the current branch name (see
+`scripts/docker-env.sh`), so `compose.yml` must keep using the `${HOST_SERVER_PORT:-3001}` / `${HOST_DB_PORT:-5435}` /
+`${HOST_REDIS_PORT:-6379}` style variables for host port mappings instead of hardcoded ports or `container_name`
+values — reintroducing either would break isolation between parallel tasks.
 
 ## Resources
 - /CLAUDE.md
